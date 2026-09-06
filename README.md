@@ -55,4 +55,9 @@ Make sure you have Node.js installed on your machine.
 *   **Register as a Freelancer** to set up your skills/expertise, browse the available job board, and submit proposals/bids.
 
 ---
+## 👩‍💻 Author
+
+**Maryam Khan**
+*   [GitHub Profile](https://github.com/MaryamKhan15)
+
 *Developed for a university project presentation.*
