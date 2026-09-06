@@ -33,42 +33,46 @@ export default function Navbar() {
           
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center gap-2">
-              <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              FreelanceHub
+            <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5 group">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-purple-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/25 group-hover:scale-105 transition-transform">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <span className="text-2xl font-black tracking-tight text-slate-900">
+                Freelance<span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600">Hub</span>
+              </span>
             </Link>
           </div>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden md:flex space-x-8">
-            <Link to="/" className="text-gray-600 hover:text-indigo-600 px-3 py-2 text-sm font-bold transition-colors">Home</Link>
-            <Link to="/jobs" className="text-gray-600 hover:text-indigo-600 px-3 py-2 text-sm font-bold transition-colors">Browse Jobs</Link>
-            <Link to="/freelancers" className="text-gray-600 hover:text-indigo-600 px-3 py-2 text-sm font-bold transition-colors">Find Talent</Link>
+          <nav className="hidden md:flex items-center space-x-8">
+            <Link to="/" className="text-slate-600 hover:text-indigo-600 px-1 py-2 text-sm font-bold transition-colors">Home</Link>
+            <Link to="/jobs" className="text-slate-600 hover:text-indigo-600 px-1 py-2 text-sm font-bold transition-colors">Browse Jobs</Link>
+            <Link to="/freelancers" className="text-slate-600 hover:text-indigo-600 px-1 py-2 text-sm font-bold transition-colors">Find Talent</Link>
           </nav>
 
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center space-x-4">
             {currentUser ? (
-              <div className="flex items-center gap-4">
-                <Link to="/dashboard" className="text-slate-700 font-bold hover:text-indigo-600 flex items-center gap-2 transition-colors">
-                  <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-extrabold">
+              <div className="flex items-center gap-3">
+                <Link to="/dashboard" className="text-slate-700 font-bold hover:text-indigo-600 flex items-center gap-2.5 transition-colors">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white flex items-center justify-center font-black text-xs shadow-sm">
                     {userData?.displayName ? userData.displayName.charAt(0).toUpperCase() : 'U'}
                   </div>
-                  Dashboard
+                  <span className="text-sm font-bold">Dashboard</span>
                 </Link>
                 <button 
                   onClick={handleLogout} 
-                  className="text-sm font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-3 py-1.5 rounded-lg transition-colors"
+                  className="text-xs font-bold text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-3 py-1.5 rounded-lg transition-colors border border-rose-100"
                 >
                   Logout
                 </button>
               </div>
             ) : (
               <>
-                <Link to="/login" className="text-slate-600 hover:text-slate-900 font-bold px-3 py-2 transition-colors">Log in</Link>
-                <Link to="/register" className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-5 py-2 rounded-full text-sm font-bold hover:shadow-lg hover:shadow-indigo-200 hover:scale-105 transition-all duration-200">
+                <Link to="/login" className="text-slate-600 hover:text-slate-900 font-bold text-sm px-3 py-2 transition-colors">Log in</Link>
+                <Link to="/register" className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-5 py-2 rounded-xl text-sm font-bold hover:shadow-lg hover:shadow-indigo-200 hover:scale-105 transition-all duration-200 shadow-md">
                   Sign up
                 </Link>
               </>
