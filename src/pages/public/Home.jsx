@@ -86,7 +86,7 @@ export default function Home() {
               initial="hidden" animate="visible" variants={staggerContainer}
               className="lg:col-span-6 text-center lg:text-left"
             >
-              <motion.h1 variants={fadeInUp} className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-tight mb-6">
+              <motion.h1 variants={fadeInUp} className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight mb-6">
                 Hire the best freelancers for any job, <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">online.</span>
               </motion.h1>
               
@@ -168,7 +168,7 @@ export default function Home() {
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lg:flex lg:items-center lg:justify-between relative z-10">
           <div className="lg:w-1/2 pr-8">
-            <h2 className="text-3xl md:text-5xl font-extrabold mb-8 text-white">Need something done?</h2>
+            <h2 className="text-3xl md:text-4xl font-extrabold mb-8 text-white">Need something done?</h2>
             
             <div className="space-y-10 mt-12">
               <div className="flex process-item group">
