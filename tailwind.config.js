@@ -6,6 +6,10 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+        serif: ['"Inter"', 'sans-serif'],
+      },
       keyframes: {
         marquee: {
           '0%': { transform: 'translateX(0%)' },
