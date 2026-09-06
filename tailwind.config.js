@@ -7,8 +7,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-        serif: ['"Inter"', 'sans-serif'],
+        sans: ['"Outfit"', 'sans-serif'],
+        display: ['"Outfit"', 'sans-serif'],
       },
       keyframes: {
         marquee: {
