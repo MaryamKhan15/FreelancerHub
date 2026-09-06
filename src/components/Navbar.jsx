@@ -21,12 +21,13 @@ export default function Navbar() {
   };
 
   return (
-    <motion.header 
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.5, ease: "easeOut" }}
-      className="sticky top-0 z-50 backdrop-blur-md bg-white/80 border-b border-slate-200 shadow-sm"
-    >
+    <>
+      <motion.header 
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="fixed top-0 left-0 right-0 w-full z-50 backdrop-blur-md bg-white/90 border-b border-slate-200 shadow-sm"
+      >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           
@@ -134,5 +135,8 @@ export default function Navbar() {
         )}
       </AnimatePresence>
     </motion.header>
+    {/* Spacer so content does not hide behind fixed navbar */}
+    <div className="h-16 w-full shrink-0 pointer-events-none" />
+    </>
   );
 }
