@@ -11,13 +11,12 @@ export default function FreelancerDashboard() {
   const [availableJobs, setAvailableJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [applyingTo, setApplyingTo] = useState(null);
-  const [coverLetter, setCoverLetter] = useState('');
   const [bidAmount, setBidAmount] = useState('');
   const [appliedJobsCount, setAppliedJobsCount] = useState(0);
-
-  // Advanced Search & Filter states
   const [searchQuery, setSearchQuery] = useState('');
   const [minBudget, setMinBudget] = useState('');
+  const [myApplications, setMyApplications] = useState([]);
+  const [activeTab, setActiveTab] = useState('browse'); // 'browse' | 'proposals'
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -32,25 +31,48 @@ export default function FreelancerDashboard() {
       }
       setLoading(false);
     };
-    fetchJobs();
-  }, []);
 
-  const handleApply = async (jobId) => {
+    const fetchMyApplications = async () => {
+      try {
+        const q = query(collection(db, 'applications'), where('freelancerId', '==', currentUser.uid));
+        const snap = await getDocs(q);
+        const apps = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        apps.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        setMyApplications(apps);
+        setAppliedJobsCount(apps.length);
+      } catch (err) {
+        console.error("Error fetching my applications:", err);
+      }
+    };
+
+    fetchJobs();
+    if (currentUser?.uid) {
+      fetchMyApplications();
+    }
+  }, [currentUser?.uid]);
+
+  const handleApply = async (job) => {
     if (!coverLetter || !bidAmount) {
       toast.error('Please specify both bid amount and proposal note.');
       return;
     }
     const toastId = toast.loading('Submitting proposal to client...');
     try {
-      await addDoc(collection(db, 'applications'), {
-        jobId,
+      const newApp = {
+        jobId: job.id,
+        jobTitle: job.title || 'Client Contract',
+        clientId: job.clientId || '',
         freelancerId: currentUser.uid,
+        freelancerName: userData?.displayName || currentUser?.displayName || 'Verified Freelancer',
+        freelancerEmail: currentUser.email || '',
         coverLetter,
         bidAmount: Number(bidAmount),
         status: 'pending',
         createdAt: new Date().toISOString()
-      });
-      toast.success('Proposal submitted successfully!', { id: toastId });
+      };
+      const docRef = await addDoc(collection(db, 'applications'), newApp);
+      toast.success('Proposal submitted successfully! Client notified.', { id: toastId });
+      setMyApplications(prev => [{ id: docRef.id, ...newApp }, ...prev]);
       setAppliedJobsCount(prev => prev + 1);
       setApplyingTo(null);
       setCoverLetter('');
@@ -151,61 +173,167 @@ export default function FreelancerDashboard() {
           </Link>
         </div>
 
-        {/* 2-Column Layout: Filters & Job Matching Feed */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
-          {/* Left Column: Filter Panel */}
-          <div className="lg:col-span-4">
-            <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/90 sticky top-24 space-y-5">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <h3 className="text-base font-bold text-slate-900">Filter Contracts</h3>
-                <button 
-                  onClick={() => { setSearchQuery(''); setMinBudget(''); }} 
-                  className="text-xs font-bold text-indigo-600 hover:text-indigo-800"
+        {/* Tab Navigation */}
+        <div className="flex items-center gap-3 border-b border-slate-200 pb-3">
+          <button
+            onClick={() => setActiveTab('browse')}
+            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
+              activeTab === 'browse'
+                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`}
+          >
+            <span>💼 Browse Contracts</span>
+            <span className={`px-2 py-0.5 rounded-full text-xs font-black ${
+              activeTab === 'browse' ? 'bg-indigo-700 text-white' : 'bg-slate-100 text-slate-700'
+            }`}>
+              {availableJobs.length}
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('proposals')}
+            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2 ${
+              activeTab === 'proposals'
+                ? 'bg-violet-600 text-white shadow-md shadow-violet-200'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`}
+          >
+            <span>📬 My Submitted Proposals</span>
+            <span className={`px-2 py-0.5 rounded-full text-xs font-black ${
+              activeTab === 'proposals' ? 'bg-violet-700 text-white' : 'bg-slate-100 text-slate-700'
+            }`}>
+              {myApplications.length}
+            </span>
+          </button>
+        </div>
+
+        {activeTab === 'proposals' ? (
+          /* My Submitted Proposals Section */
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div>
+                <h2 className="text-xl font-black text-slate-900">Your Submitted Proposals</h2>
+                <p className="text-xs text-slate-500 mt-0.5">Track real-time status of your client bids and escrow hiring contracts.</p>
+              </div>
+              <span className="text-xs font-bold px-3 py-1 bg-violet-50 text-violet-700 rounded-full border border-violet-200">
+                {myApplications.length} Total Submissions
+              </span>
+            </div>
+
+            {myApplications.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="w-16 h-16 rounded-2xl bg-violet-50 text-violet-600 flex items-center justify-center text-3xl mx-auto mb-3">
+                  📬
+                </div>
+                <h3 className="font-bold text-slate-900 text-base">No proposals sent yet</h3>
+                <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+                  Browse open client contracts in the marketplace and submit your first competitive bid to start earning!
+                </p>
+                <button
+                  onClick={() => setActiveTab('browse')}
+                  className="mt-4 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm transition-all"
                 >
-                  Reset
+                  Browse Open Contracts &rarr;
                 </button>
               </div>
+            ) : (
+              <div className="space-y-4">
+                {myApplications.map((app) => (
+                  <div key={app.id} className="p-5 rounded-2xl border border-slate-200/90 hover:border-slate-300 transition-all bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="space-y-2 max-w-2xl">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="text-base font-black text-slate-900">{app.jobTitle || 'Client Contract'}</h4>
+                        {app.status === 'hired' ? (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-sm animate-pulse">
+                            <span>✓</span> HIRED & ESCROW FUNDED
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-ping"></span> Under Client Review
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-600 bg-white p-3 rounded-xl border border-slate-200 leading-relaxed font-mono">
+                        &quot;{app.coverLetter}&quot;
+                      </p>
+                      <p className="text-[11px] text-slate-400 font-semibold">
+                        Submitted on {app.createdAt ? new Date(app.createdAt).toLocaleDateString() : 'Recently'}
+                      </p>
+                    </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Keywords & Skills</label>
-                <div className="relative">
-                  <input 
-                    type="text" 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search by title, React, Figma..." 
-                    className="w-full border border-slate-200 bg-slate-50 rounded-xl py-2.5 px-3.5 text-sm font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
-                  />
-                </div>
+                    <div className="flex md:flex-col items-end justify-between md:justify-center gap-2 shrink-0">
+                      <div className="text-right">
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Your Bid</p>
+                        <p className="text-2xl font-black text-emerald-600">${app.bidAmount} <span className="text-xs font-semibold text-slate-500">USD</span></p>
+                      </div>
+                      {app.status === 'hired' && (
+                        <span className="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
+                          Funds in Escrow 🔒
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
               </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Minimum Budget (USD)</label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-2.5 text-slate-400 font-bold text-sm">$</span>
-                  <input 
-                    type="number" 
-                    value={minBudget}
-                    onChange={(e) => setMinBudget(e.target.value)}
-                    placeholder="e.g. 500" 
-                    className="w-full border border-slate-200 bg-slate-50 rounded-xl py-2.5 pl-8 pr-3.5 text-sm font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
-                  />
-                </div>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-100 text-xs text-indigo-900 font-medium leading-relaxed">
-                💡 <strong>Pro Tip:</strong> Apply to contracts that align with your verified skills to maximize client response rates.
-              </div>
-            </div>
+            )}
           </div>
+        ) : (
+          /* 2-Column Layout: Filters & Job Matching Feed */
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            {/* Left Column: Filter Panel */}
+            <div className="lg:col-span-4">
+              <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200/90 sticky top-24 space-y-5">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <h3 className="text-base font-bold text-slate-900">Filter Contracts</h3>
+                  <button 
+                    onClick={() => { setSearchQuery(''); setMinBudget(''); }} 
+                    className="text-xs font-bold text-indigo-600 hover:text-indigo-800"
+                  >
+                    Reset
+                  </button>
+                </div>
 
-          {/* Right Column: Live Matching Feed */}
-          <div className="lg:col-span-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-slate-900">Open Contracts ({filteredJobs.length})</h2>
-              <span className="text-xs font-semibold text-slate-500">Live Client Demand</span>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Keywords & Skills</label>
+                  <div className="relative">
+                    <input 
+                      type="text" 
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search by title, React, Figma..." 
+                      className="w-full border border-slate-200 bg-slate-50 rounded-xl py-2.5 px-3.5 text-sm font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Minimum Budget (USD)</label>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-2.5 text-slate-400 font-bold text-sm">$</span>
+                    <input 
+                      type="number" 
+                      value={minBudget}
+                      onChange={(e) => setMinBudget(e.target.value)}
+                      placeholder="e.g. 500" 
+                      className="w-full border border-slate-200 bg-slate-50 rounded-xl py-2.5 pl-8 pr-3.5 text-sm font-medium focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-100 text-xs text-indigo-900 font-medium leading-relaxed">
+                  💡 <strong>Pro Tip:</strong> Apply to contracts that align with your verified skills to maximize client response rates.
+                </div>
+              </div>
             </div>
+
+            {/* Right Column: Live Matching Feed */}
+            <div className="lg:col-span-8">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-slate-900">Open Contracts ({filteredJobs.length})</h2>
+                <span className="text-xs font-semibold text-slate-500">Live Client Demand</span>
+              </div>
 
             {loading ? (
               <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-slate-200">
@@ -291,7 +419,7 @@ export default function FreelancerDashboard() {
                         </div>
 
                         <button 
-                          onClick={() => handleApply(job.id)}
+                          onClick={() => handleApply(job)}
                           className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold py-2.5 rounded-xl text-sm hover:shadow-lg hover:shadow-indigo-200 transition-all"
                         >
                           Submit Formal Proposal &rarr;
@@ -318,6 +446,7 @@ export default function FreelancerDashboard() {
           </div>
 
         </div>
+        )}
 
       </div>
     </div>
