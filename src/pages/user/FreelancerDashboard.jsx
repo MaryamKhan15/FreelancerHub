@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
+import { generateAIProposal } from '../../services/aiService';
 
 export default function FreelancerDashboard() {
   const { currentUser, userData, logout } = useAuth();
@@ -13,6 +14,7 @@ export default function FreelancerDashboard() {
   const [loading, setLoading] = useState(true);
   const [applyingTo, setApplyingTo] = useState(null);
   const [bidAmount, setBidAmount] = useState('');
+  const [aiGenerating, setAiGenerating] = useState(false);
   const [appliedJobsCount, setAppliedJobsCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [minBudget, setMinBudget] = useState('');
@@ -82,6 +84,23 @@ export default function FreelancerDashboard() {
       console.error("Error applying to job:", err);
       toast.error('Failed to submit proposal.', { id: toastId });
     }
+  };
+
+  const handleAIGenerateProposal = (job) => {
+    setAiGenerating(true);
+    const toastId = toast.loading('🤖 AI is analyzing contract & drafting tailored proposal...');
+    setTimeout(() => {
+      const { coverLetter: aiNote, suggestedBid } = generateAIProposal({
+        job,
+        freelancer: userData || { displayName: currentUser?.displayName }
+      });
+      setCoverLetter(aiNote);
+      if (!bidAmount) {
+        setBidAmount(suggestedBid);
+      }
+      setAiGenerating(false);
+      toast.success('✨ AI Proposal drafted with optimal keywords & structure!', { id: toastId });
+    }, 750);
   };
 
   const filteredJobs = availableJobs.filter(job => {
@@ -425,14 +444,30 @@ export default function FreelancerDashboard() {
                         </div>
 
                         <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">Cover Note / Approach</label>
+                          <div className="flex items-center justify-between mb-1.5">
+                            <label className="block text-xs font-bold text-slate-700">Cover Note & Approach</label>
+                            
+                            {/* AI Proposal Assistant Trigger */}
+                            <button
+                              type="button"
+                              onClick={() => handleAIGenerateProposal(job)}
+                              disabled={aiGenerating}
+                              className="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white rounded-lg text-xs font-extrabold shadow-sm hover:shadow-md hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
+                            >
+                              <span>{aiGenerating ? '⚡ Generating...' : '✨ Auto-Generate with AI'}</span>
+                            </button>
+                          </div>
+
                           <textarea 
-                            rows="3"
+                            rows="4"
                             value={coverLetter}
                             onChange={(e) => setCoverLetter(e.target.value)}
-                            placeholder="Why are you the right expert for this contract?"
+                            placeholder="Why are you the right expert for this contract? Or click 'Auto-Generate with AI' above..."
                             className="w-full border border-slate-200 bg-white rounded-xl py-2 px-3 text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none resize-none"
                           ></textarea>
+                          <p className="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
+                            <span>🤖</span> AI analyzes job requirements and matches your verified profile skills into a winning bid.
+                          </p>
                         </div>
 
                         <button 

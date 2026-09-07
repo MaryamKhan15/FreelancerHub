@@ -310,6 +310,68 @@ export default function Home() {
         </div>
       </div>
 
+      {/* AI Features & Platform USP Section */}
+      <div className="py-20 bg-gradient-to-b from-slate-900 via-indigo-950 to-slate-900 text-white relative overflow-hidden border-y border-indigo-500/20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-xs font-black text-indigo-300 mb-3">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              NEXT-GEN AI ADVANTAGE &bull; THE FREELANCEHUB DIFFERENTIATOR
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
+              Why FreelanceHub Beats Traditional Marketplaces
+            </h2>
+            <p className="mt-3 text-slate-300 text-base sm:text-lg">
+              Unlike legacy platforms with flooded spam bids, our built-in AI intelligence engine guarantees perfect job-talent alignment.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Feature 1 */}
+            <div className="p-8 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl hover:border-indigo-400/40 hover:-translate-y-1 transition-all duration-300 group">
+              <div className="w-14 h-14 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-3xl mb-6 border border-indigo-500/30 group-hover:scale-110 transition-transform">
+                🎯
+              </div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">For Clients</span>
+              </div>
+              <h3 className="text-xl font-black text-white mb-2">AI Job-Talent Matchmaker</h3>
+              <p className="text-sm text-slate-300 leading-relaxed">
+                Post your contract requirements and let AI analyze skills, experience, and budget to rank the top 3 best-fit freelancers with 90%+ match scores.
+              </p>
+            </div>
+
+            {/* Feature 2 */}
+            <div className="p-8 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl hover:border-violet-400/40 hover:-translate-y-1 transition-all duration-300 group">
+              <div className="w-14 h-14 rounded-2xl bg-violet-500/20 text-violet-400 flex items-center justify-center text-3xl mb-6 border border-violet-500/30 group-hover:scale-110 transition-transform">
+                ✨
+              </div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded border border-violet-500/20">For Freelancers</span>
+              </div>
+              <h3 className="text-xl font-black text-white mb-2">1-Click AI Proposal Assistant</h3>
+              <p className="text-sm text-slate-300 leading-relaxed">
+                Freelancers click &quot;Auto-Generate with AI&quot; to formulate personalized, persuasive proposals matching the job&apos;s exact technical specifications.
+              </p>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="p-8 rounded-3xl bg-white/5 border border-white/10 backdrop-blur-xl hover:border-emerald-400/40 hover:-translate-y-1 transition-all duration-300 group">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-3xl mb-6 border border-emerald-500/30 group-hover:scale-110 transition-transform">
+                🛡️
+              </div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Trust & Safety</span>
+              </div>
+              <h3 className="text-xl font-black text-white mb-2">Verified Identity & Escrow</h3>
+              <p className="text-sm text-slate-300 leading-relaxed">
+                Document-verified credentials paired with 100% milestone-protected escrow funds guarantee zero fraud and complete transparency for both parties.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* How it Works / Why Choose Us Section */}
       <div className="py-20 bg-slate-900 text-white relative overflow-hidden bg-dot-dark" ref={processRef}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
