@@ -4,6 +4,7 @@ import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 export default function FreelancerDashboard() {
   const { currentUser, userData } = useAuth();
@@ -127,6 +128,27 @@ export default function FreelancerDashboard() {
               ⚡
             </div>
           </div>
+        </div>
+
+        {/* Pro Membership Monetization Banner */}
+        <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-5 sm:p-6 text-white flex flex-col sm:flex-row items-center justify-between gap-5 border border-indigo-500/30 shadow-xl">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 to-amber-600 flex items-center justify-center text-slate-950 font-black text-2xl shadow-lg shrink-0">
+              👑
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="font-extrabold text-base text-white">Upgrade to FreelanceHub PRO</h4>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                  $9.99 / MO
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 mt-1">Get Golden Pro Verified badge, top 10% search placement, and zero withdrawal fees.</p>
+            </div>
+          </div>
+          <Link to="/pricing" className="shrink-0 px-5 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-xs rounded-xl shadow-lg hover:scale-105 transition-all">
+            View PRO Perks &rarr;
+          </Link>
         </div>
 
         {/* 2-Column Layout: Filters & Job Matching Feed */}

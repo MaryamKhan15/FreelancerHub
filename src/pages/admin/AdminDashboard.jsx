@@ -246,9 +246,9 @@ export default function AdminDashboard() {
 
               <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Volume</p>
-                  <p className="text-2xl font-black text-slate-900 mt-1">${totalBudget.toLocaleString()}</p>
-                  <p className="text-[11px] font-semibold text-emerald-600 mt-0.5">{openJobs} Open Contracts</p>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Platform Revenue</p>
+                  <p className="text-2xl font-black text-slate-900 mt-1">${Math.round((totalBudget * 0.03) + (freelancerCount * 9.99)).toLocaleString()} <span className="text-xs font-bold text-emerald-600">USD</span></p>
+                  <p className="text-[11px] font-semibold text-emerald-600 mt-0.5">3% Escrow + Pro Subs</p>
                 </div>
                 <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-black">
                   💰

@@ -186,6 +186,19 @@ export default function ClientDashboard() {
                   ></textarea>
                 </div>
 
+                {/* Monetization: Featured Post Upgrade Option */}
+                <div className="p-3.5 rounded-xl bg-violet-50/80 border border-violet-200/80 flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <input type="checkbox" id="featureContract" className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer" />
+                    <label htmlFor="featureContract" className="text-xs font-bold text-slate-800 cursor-pointer">
+                      ⭐ Feature on Top ($29)
+                    </label>
+                  </div>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-violet-700 bg-white px-2.5 py-0.5 rounded-full border border-violet-200 shadow-xs">
+                    24h Urgent Hire
+                  </span>
+                </div>
+
                 <button
                   type="submit"
                   disabled={loading}

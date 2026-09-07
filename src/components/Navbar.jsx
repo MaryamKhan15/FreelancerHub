@@ -46,10 +46,11 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-7">
             <Link to="/" className="text-slate-600 hover:text-indigo-600 px-1 py-2 text-sm font-bold transition-colors">Home</Link>
             <Link to="/jobs" className="text-slate-600 hover:text-indigo-600 px-1 py-2 text-sm font-bold transition-colors">Browse Jobs</Link>
             <Link to="/freelancers" className="text-slate-600 hover:text-indigo-600 px-1 py-2 text-sm font-bold transition-colors">Find Talent</Link>
+            <Link to="/pricing" className="text-slate-600 hover:text-indigo-600 px-1 py-2 text-sm font-bold transition-colors">Pricing</Link>
           </nav>
 
           {/* Desktop Auth Buttons */}
@@ -110,6 +111,7 @@ export default function Navbar() {
               <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="text-slate-600 hover:text-indigo-600 font-bold py-2 border-b border-slate-50">Home</Link>
               <Link to="/jobs" onClick={() => setIsMobileMenuOpen(false)} className="text-slate-600 hover:text-indigo-600 font-bold py-2 border-b border-slate-50">Browse Jobs</Link>
               <Link to="/freelancers" onClick={() => setIsMobileMenuOpen(false)} className="text-slate-600 hover:text-indigo-600 font-bold py-2 border-b border-slate-50">Find Talent</Link>
+              <Link to="/pricing" onClick={() => setIsMobileMenuOpen(false)} className="text-slate-600 hover:text-indigo-600 font-bold py-2 border-b border-slate-50">Pricing & Fees</Link>
               
               <div className="pt-4 flex flex-col gap-3">
                 {currentUser ? (

@@ -10,6 +10,7 @@ import Login from './pages/public/Login';
 import Register from './pages/public/Register';
 import JobListings from './pages/public/JobListings';
 import FreelancerListings from './pages/public/FreelancerListings';
+import Pricing from './pages/public/Pricing';
 
 import ClientDashboard from './pages/user/ClientDashboard';
 import FreelancerDashboard from './pages/user/FreelancerDashboard';
@@ -31,6 +32,7 @@ function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/jobs" element={<JobListings />} />
               <Route path="/freelancers" element={<FreelancerListings />} />
+              <Route path="/pricing" element={<Pricing />} />
               
               {/* Har logged-in user ke liye */}
               <Route 
