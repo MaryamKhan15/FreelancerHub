@@ -4,10 +4,11 @@ import { collection, query, where, getDocs, addDoc } from 'firebase/firestore';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function FreelancerDashboard() {
-  const { currentUser, userData } = useAuth();
+  const { currentUser, userData, logout } = useAuth();
+  const navigate = useNavigate();
   const [availableJobs, setAvailableJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [applyingTo, setApplyingTo] = useState(null);
@@ -109,10 +110,26 @@ export default function FreelancerDashboard() {
             <p className="text-sm text-slate-500 mt-1">Discover new client contracts, submit proposals, and track milestone earnings.</p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            <Link 
+              to="/" 
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm transition-colors"
+            >
+              <span>🌐 Public Site</span>
+            </Link>
             <span className="text-xs font-bold text-slate-500 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm">
-              Role: <strong className="text-indigo-600 font-extrabold">{userData?.expertise || 'Developer / Designer'}</strong>
+              Role: <strong className="text-indigo-600 font-extrabold">{userData?.expertise || 'Talent'}</strong>
             </span>
+            <button
+              onClick={async () => {
+                await logout();
+                toast.success('Logged out');
+                navigate('/login');
+              }}
+              className="inline-flex items-center gap-1 text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3.5 py-2 rounded-xl border border-rose-200 transition-colors"
+            >
+              Logout
+            </button>
           </div>
         </div>
 

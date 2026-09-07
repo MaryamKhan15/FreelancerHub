@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { db, auth } from '../../firebase';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -92,22 +92,22 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="flex h-[calc(100vh-64px)] overflow-hidden bg-slate-50 font-sans">
+    <div className="flex h-screen overflow-hidden bg-slate-50 font-sans">
       
       {/* Sleek Admin Sidebar */}
       <div className="w-64 bg-slate-900 text-slate-300 flex flex-col border-r border-slate-800 shadow-2xl shrink-0 z-20">
         
         {/* Brand Header */}
         <div className="p-6 border-b border-slate-800/80 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white font-black shadow-md shadow-indigo-500/30">
+          <Link to="/" className="flex items-center gap-2.5 group" title="Return to Public Site">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white font-black shadow-md shadow-indigo-500/30 group-hover:scale-105 transition-transform">
               ⚡
             </div>
             <div>
               <h2 className="font-extrabold text-white text-base leading-tight">Admin Console</h2>
-              <p className="text-[11px] font-semibold text-indigo-400">FreelanceHub Core</p>
+              <p className="text-[11px] font-semibold text-indigo-400 group-hover:underline">← Public Site</p>
             </div>
-          </div>
+          </Link>
         </div>
 
         {/* Navigation Tabs */}

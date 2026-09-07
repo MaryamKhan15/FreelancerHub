@@ -4,9 +4,11 @@ import { collection, addDoc, query, where, getDocs, doc, updateDoc } from 'fireb
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function ClientDashboard() {
-  const { currentUser, userData } = useAuth();
+  const { currentUser, userData, logout } = useAuth();
+  const navigate = useNavigate();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [budget, setBudget] = useState('');
@@ -110,10 +112,26 @@ export default function ClientDashboard() {
             <p className="text-sm text-slate-500 mt-1">Manage your active contracts, review incoming proposals, and fund escrow.</p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-bold text-slate-400 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm">
-              Account ID: <code className="text-slate-700 font-mono">{currentUser?.uid.slice(0, 8)}...</code>
+          <div className="flex items-center gap-3 flex-wrap">
+            <Link 
+              to="/" 
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm transition-colors"
+            >
+              <span>🌐 Public Site</span>
+            </Link>
+            <span className="text-xs font-bold text-slate-500 bg-white px-3 py-2 rounded-xl border border-slate-200 shadow-sm">
+              ID: <code className="text-slate-700 font-mono">{currentUser?.uid.slice(0, 6)}...</code>
             </span>
+            <button
+              onClick={async () => {
+                await logout();
+                toast.success('Logged out');
+                navigate('/login');
+              }}
+              className="inline-flex items-center gap-1 text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-3.5 py-2 rounded-xl border border-rose-200 transition-colors"
+            >
+              Logout
+            </button>
           </div>
         </div>
 
