@@ -104,7 +104,7 @@ export default function AdminDashboard() {
               ⚡
             </div>
             <div>
-              <h2 className="font-extrabold text-white text-base leading-tight">Admin Console</h2>
+              <h2 className="font-extrabold text-white text-base leading-tight">Superadmin Dashboard</h2>
               <p className="text-[11px] font-semibold text-indigo-400 group-hover:underline">← Public Site</p>
             </div>
           </Link>
@@ -186,12 +186,16 @@ export default function AdminDashboard() {
         {/* Sticky Top Status Bar */}
         <header className="px-8 py-4 bg-white/90 backdrop-blur-md border-b border-slate-200 shrink-0 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-black text-slate-900 capitalize">
+            <span className="px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-800 font-black text-xs border border-indigo-200">
+              SUPERADMIN DASHBOARD
+            </span>
+            <span className="text-slate-300 font-bold">/</span>
+            <h1 className="text-lg font-black text-slate-900 capitalize">
               {activeTab === 'overview' ? 'Real-Time System Overview' : activeTab === 'users' ? 'User Directory' : 'Contracts Directory'}
             </h1>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] font-extrabold text-emerald-700">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              ACTIVE
+              LIVE
             </span>
           </div>
 

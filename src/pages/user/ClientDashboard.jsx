@@ -102,12 +102,12 @@ export default function ClientDashboard() {
         {/* Header with Live Status */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-xs font-bold text-blue-700 mb-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              VERIFIED CLIENT PORTAL
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 border border-blue-300 text-xs font-black text-blue-800 mb-2">
+              <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
+              CLIENT DASHBOARD
             </div>
             <h1 className="text-3xl font-black text-slate-900 tracking-tight">
-              Welcome, <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">{userData?.displayName || 'Client'}</span>
+              Client Dashboard &bull; <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">{userData?.displayName || 'Client'}</span>
             </h1>
             <p className="text-sm text-slate-500 mt-1">Manage your active contracts, review incoming proposals, and fund escrow.</p>
           </div>

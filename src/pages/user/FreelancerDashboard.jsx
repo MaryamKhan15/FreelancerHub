@@ -100,12 +100,12 @@ export default function FreelancerDashboard() {
         {/* Header with Live Status */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-200">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-50 border border-violet-200 text-xs font-bold text-violet-700 mb-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              VERIFIED TALENT WORKSPACE
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-100 border border-violet-300 text-xs font-black text-violet-800 mb-2">
+              <span className="w-2 h-2 rounded-full bg-violet-600 animate-pulse"></span>
+              USER DASHBOARD (FREELANCER)
             </div>
             <h1 className="text-3xl font-black text-slate-900 tracking-tight">
-              Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-indigo-600">{userData?.displayName || 'Freelancer'}</span>
+              User Dashboard &bull; <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-indigo-600">{userData?.displayName || 'Freelancer'}</span>
             </h1>
             <p className="text-sm text-slate-500 mt-1">Discover new client contracts, submit proposals, and track milestone earnings.</p>
           </div>
