@@ -13,6 +13,7 @@ export default function FreelancerDashboard() {
   const [availableJobs, setAvailableJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [applyingTo, setApplyingTo] = useState(null);
+  const [coverLetter, setCoverLetter] = useState('');
   const [bidAmount, setBidAmount] = useState('');
   const [aiGenerating, setAiGenerating] = useState(false);
   const [appliedJobsCount, setAppliedJobsCount] = useState(0);
