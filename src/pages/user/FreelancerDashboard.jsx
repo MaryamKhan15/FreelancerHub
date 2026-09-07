@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { generateAIProposal } from '../../services/aiService';
+import RealTimeChatModal from '../../components/RealTimeChatModal';
 
 export default function FreelancerDashboard() {
   const { currentUser, userData, logout } = useAuth();
@@ -20,6 +21,7 @@ export default function FreelancerDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [minBudget, setMinBudget] = useState('');
   const [myApplications, setMyApplications] = useState([]);
+  const [chatTarget, setChatTarget] = useState(null); // { targetUser, jobContext }
   const [activeTab, setActiveTab] = useState('browse'); // 'browse' | 'proposals'
 
   useEffect(() => {
@@ -304,11 +306,32 @@ export default function FreelancerDashboard() {
                         <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Your Bid</p>
                         <p className="text-2xl font-black text-emerald-600">${app.bidAmount} <span className="text-xs font-semibold text-slate-500">USD</span></p>
                       </div>
-                      {app.status === 'hired' && (
-                        <span className="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
-                          Funds in Escrow 🔒
-                        </span>
-                      )}
+
+                      <div className="flex items-center gap-2">
+                        {app.clientId && (
+                          <button
+                            type="button"
+                            onClick={() => setChatTarget({
+                              targetUser: {
+                                id: app.clientId,
+                                name: 'Contract Client',
+                                email: '',
+                                role: 'client'
+                              },
+                              jobContext: app.jobTitle || 'Contract Milestone'
+                            })}
+                            className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs rounded-xl border border-indigo-200 transition-all flex items-center gap-1.5 shadow-xs hover:scale-105"
+                          >
+                            <span>💬 Chat</span>
+                          </button>
+                        )}
+
+                        {app.status === 'hired' && (
+                          <span className="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
+                            Funds in Escrow 🔒
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -502,6 +525,17 @@ export default function FreelancerDashboard() {
         )}
 
       </div>
+
+      {/* Real-Time Chat Modal */}
+      {chatTarget && (
+        <RealTimeChatModal
+          isOpen={Boolean(chatTarget)}
+          onClose={() => setChatTarget(null)}
+          targetUser={chatTarget.targetUser}
+          jobContext={chatTarget.jobContext}
+        />
+      )}
+
     </div>
   );
 }

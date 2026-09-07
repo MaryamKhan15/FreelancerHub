@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { db } from '../../firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../../context/AuthContext';
+import RealTimeChatModal from '../../components/RealTimeChatModal';
 
 const CATEGORY_KEYWORDS = {
   "Website Development": ["web", "react", "node", "html", "css", "js", "frontend", "backend", "fullstack", "developer"],
@@ -16,10 +18,13 @@ const CATEGORY_KEYWORDS = {
 };
 
 export default function FreelancerListings() {
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
   const [freelancers, setFreelancers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFreelancer, setSelectedFreelancer] = useState(null); // For Profile Inspection Modal
+  const [chatTarget, setChatTarget] = useState(null); // For direct RealTimeChatModal
   const [searchParams, setSearchParams] = useSearchParams();
   
   const categoryParam = searchParams.get('category') || 'All';
@@ -281,7 +286,7 @@ export default function FreelancerListings() {
                     )}
                   </div>
 
-                  {/* Action Buttons: View Credentials & Invite */}
+                  {/* Action Buttons: View Credentials & Direct Chat */}
                   <div className="pt-4 border-t border-slate-100 grid grid-cols-2 gap-2">
                     <button
                       onClick={() => setSelectedFreelancer(freelancer)}
@@ -290,12 +295,27 @@ export default function FreelancerListings() {
                       View Profile
                     </button>
 
-                    <Link 
-                      to="/login"
-                      className="w-full inline-flex items-center justify-center gap-1 bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold py-2.5 px-3 rounded-xl hover:shadow-lg hover:shadow-indigo-200 transition-all text-xs"
+                    <button
+                      onClick={() => {
+                        if (!currentUser) {
+                          navigate('/login');
+                        } else {
+                          setChatTarget({
+                            targetUser: {
+                              id: freelancer.id,
+                              name: freelancer.displayName || 'Verified Freelancer',
+                              email: freelancer.email || '',
+                              role: 'freelancer'
+                            },
+                            jobContext: 'Direct Project Inquiry'
+                          });
+                        }
+                      }}
+                      className="w-full inline-flex items-center justify-center gap-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold py-2.5 px-3 rounded-xl hover:shadow-lg hover:shadow-indigo-200 transition-all text-xs"
                     >
-                      Invite &rarr;
-                    </Link>
+                      <span>💬 Chat</span>
+                      <span>&rarr;</span>
+                    </button>
                   </div>
 
                 </motion.div>
@@ -426,18 +446,45 @@ export default function FreelancerListings() {
                 >
                   Close Profile
                 </button>
-                <Link
-                  to="/login"
-                  className="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-center font-extrabold text-sm rounded-xl shadow-lg hover:shadow-indigo-200 transition-all"
+                <button
+                  onClick={() => {
+                    const freelancer = selectedFreelancer;
+                    setSelectedFreelancer(null);
+                    if (!currentUser) {
+                      navigate('/login');
+                    } else {
+                      setChatTarget({
+                        targetUser: {
+                          id: freelancer.id,
+                          name: freelancer.displayName || 'Verified Freelancer',
+                          email: freelancer.email || '',
+                          role: 'freelancer'
+                        },
+                        jobContext: 'Direct Project Inquiry'
+                      });
+                    }
+                  }}
+                  className="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white text-center font-extrabold text-sm rounded-xl shadow-lg hover:shadow-indigo-200 transition-all flex items-center justify-center gap-1.5"
                 >
-                  Direct Invite &rarr;
-                </Link>
+                  <span>💬 Direct Chat</span>
+                  <span>&rarr;</span>
+                </button>
               </div>
 
             </motion.div>
           </div>
         )}
       </AnimatePresence>
+
+      {/* Direct Real-Time Chat Modal */}
+      {chatTarget && (
+        <RealTimeChatModal
+          isOpen={Boolean(chatTarget)}
+          onClose={() => setChatTarget(null)}
+          targetUser={chatTarget.targetUser}
+          jobContext={chatTarget.jobContext}
+        />
+      )}
 
     </div>
   );

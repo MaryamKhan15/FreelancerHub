@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { getAIMatchedFreelancers } from '../../services/aiService';
+import RealTimeChatModal from '../../components/RealTimeChatModal';
 
 export default function ClientDashboard() {
   const { currentUser, userData, logout } = useAuth();
@@ -19,6 +20,7 @@ export default function ClientDashboard() {
   const [applications, setApplications] = useState([]);
   const [allFreelancers, setAllFreelancers] = useState([]);
   const [aiMatchingJob, setAiMatchingJob] = useState(null); // When client clicks "🤖 AI Match Talent"
+  const [chatTarget, setChatTarget] = useState(null); // { targetUser, jobContext }
   const [activeTab, setActiveTab] = useState('jobs'); // 'jobs' | 'proposals'
   const [loading, setLoading] = useState(false);
 
@@ -440,23 +442,42 @@ export default function ClientDashboard() {
                           </p>
                         </div>
 
-                        <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                        <div className="flex items-center justify-between pt-2 border-t border-slate-100 flex-wrap gap-2">
                           <span className="text-[11px] text-slate-400 font-medium">
                             Submitted {app.createdAt ? new Date(app.createdAt).toLocaleDateString() : 'Recently'}
                           </span>
 
-                          {app.status === 'hired' ? (
-                            <span className="px-3 py-1.5 rounded-xl text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
-                              ✓ Hired & Escrow Funded
-                            </span>
-                          ) : (
+                          <div className="flex items-center gap-2">
+                            {/* Real-time Chat Trigger */}
                             <button
-                              onClick={() => handleHireTalent(app.id, app.bidAmount, app.freelancerName || 'Freelancer')}
-                              className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold text-xs rounded-xl shadow-md hover:shadow-emerald-200 hover:scale-105 transition-all"
+                              type="button"
+                              onClick={() => setChatTarget({
+                                targetUser: {
+                                  id: app.freelancerId,
+                                  name: app.freelancerName || 'Verified Freelancer',
+                                  email: app.freelancerEmail || '',
+                                  role: 'freelancer'
+                                },
+                                jobContext: app.jobTitle || 'Contract Proposal'
+                              })}
+                              className="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs rounded-xl border border-indigo-200 transition-all flex items-center gap-1.5 shadow-xs hover:scale-105"
                             >
-                              Hire & Fund Escrow (${app.bidAmount}) &rarr;
+                              <span>💬 Chat Now</span>
                             </button>
-                          )}
+
+                            {app.status === 'hired' ? (
+                              <span className="px-3 py-1.5 rounded-xl text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
+                                ✓ Hired & Escrow Funded
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => handleHireTalent(app.id, app.bidAmount, app.freelancerName || 'Freelancer')}
+                                className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold text-xs rounded-xl shadow-md hover:shadow-emerald-200 hover:scale-105 transition-all"
+                              >
+                                Hire & Fund Escrow (${app.bidAmount}) &rarr;
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </motion.div>
                     ))}
@@ -566,9 +587,29 @@ export default function ClientDashboard() {
                           </span>
                         </div>
 
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-violet-100 text-violet-800 border border-violet-200">
-                          {freelancer.aiRecommendation}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAiMatchingJob(null);
+                              setChatTarget({
+                                targetUser: {
+                                  id: freelancer.id,
+                                  name: freelancer.displayName || 'Verified Freelancer',
+                                  email: freelancer.email || '',
+                                  role: 'freelancer'
+                                },
+                                jobContext: aiMatchingJob.title
+                              });
+                            }}
+                            className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all hover:scale-105"
+                          >
+                            💬 Chat
+                          </button>
+                          <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-violet-100 text-violet-800 border border-violet-200">
+                            {freelancer.aiRecommendation}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   ));
@@ -589,6 +630,16 @@ export default function ClientDashboard() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Real-Time Chat Modal */}
+      {chatTarget && (
+        <RealTimeChatModal
+          isOpen={Boolean(chatTarget)}
+          onClose={() => setChatTarget(null)}
+          targetUser={chatTarget.targetUser}
+          jobContext={chatTarget.jobContext}
+        />
+      )}
 
     </div>
   );
