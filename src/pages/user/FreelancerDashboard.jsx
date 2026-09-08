@@ -9,6 +9,7 @@ import { generateAIProposal } from '../../services/aiService';
 import RealTimeChatModal from '../../components/RealTimeChatModal';
 import UpgradeProModal from '../../components/UpgradeProModal';
 import NotificationBell from '../../components/NotificationBell';
+import DisputeModal from '../../components/DisputeModal';
 
 export default function FreelancerDashboard() {
   const { currentUser, userData, logout, reloadUserData } = useAuth();
@@ -25,6 +26,7 @@ export default function FreelancerDashboard() {
   const [minBudget, setMinBudget] = useState('');
   const [myApplications, setMyApplications] = useState([]);
   const [chatTarget, setChatTarget] = useState(null); // { targetUser, jobContext }
+  const [disputeTarget, setDisputeTarget] = useState(null); // { contractId, jobTitle, clientId, clientName, amount, defaultType }
   const [activeTab, setActiveTab] = useState('browse'); // 'browse' | 'proposals'
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
@@ -393,9 +395,26 @@ export default function FreelancerDashboard() {
                         )}
 
                         {app.status === 'hired' && (
-                          <span className="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
-                            Funds in Escrow 🔒
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
+                              Funds in Escrow 🔒
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setDisputeTarget({
+                                contractId: app.id,
+                                jobTitle: app.jobTitle || 'Contract Milestone',
+                                clientId: app.clientId,
+                                clientName: 'Contract Client',
+                                amount: app.bidAmount,
+                                defaultType: 'dispute'
+                              })}
+                              className="px-2.5 py-1 text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg transition-colors flex items-center gap-1"
+                              title="Dispute this milestone if client changed scope or delays payment approval"
+                            >
+                              <span>⚖️</span> Dispute
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -628,6 +647,16 @@ export default function FreelancerDashboard() {
           reloadUserData();
         }}
       />
+
+      {/* Trust & Safety / Dispute Modal */}
+      {disputeTarget && (
+        <DisputeModal
+          isOpen={Boolean(disputeTarget)}
+          onClose={() => setDisputeTarget(null)}
+          defaultType={disputeTarget.defaultType || 'dispute'}
+          contextData={disputeTarget}
+        />
+      )}
 
     </div>
   );

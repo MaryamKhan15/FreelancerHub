@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { db, auth } from '../../firebase';
-import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc, updateDoc, addDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
@@ -9,8 +9,10 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Toolti
 export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [jobs, setJobs] = useState([]);
+  const [disputes, setDisputes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'users' | 'jobs'
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'users' | 'jobs' | 'disputes'
+  const [selectedDisputeFilter, setSelectedDisputeFilter] = useState('all'); // 'all' | 'pending' | 'resolved'
   const navigate = useNavigate();
 
   const fetchData = async () => {
@@ -21,6 +23,48 @@ export default function AdminDashboard() {
       
       const jobsSnap = await getDocs(collection(db, 'jobs'));
       setJobs(jobsSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+
+      const disputesSnap = await getDocs(collection(db, 'disputes'));
+      let disputesList = disputesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      // Auto-seed realistic demo disputes if none exist yet for demonstration
+      if (disputesList.length === 0) {
+        const seedDisputes = [
+          {
+            type: 'dispute',
+            status: 'pending_arbitration',
+            jobTitle: 'Fullstack React & Next.js SaaS MVP',
+            disputedAmount: 450,
+            filedBy: { name: 'TechStart Client', role: 'client', email: 'client@techstart.io' },
+            targetUser: { name: 'Hamza Ali (Fullstack Pro)', role: 'freelancer' },
+            clientClaim: "Freelancer didn't complete the work. 3 major API integrations and mobile views are incomplete despite agreed milestone deadline.",
+            freelancerClaim: "Client changed requirements midway. Demanded additional payment gateways and auth roles that were not in the initial spec without extra compensation.",
+            reasonSelected: "Work scope disagreement & milestone delivery",
+            description: "Contract was funded in escrow with a $450 balance. Client requests 100% refund, while freelancer requests release based on completed frontend code in repository.",
+            createdAt: new Date(Date.now() - 3600000 * 6).toISOString()
+          },
+          {
+            type: 'dispute',
+            status: 'pending_arbitration',
+            jobTitle: 'Mobile Flutter App UI/UX Redesign',
+            disputedAmount: 280,
+            filedBy: { name: 'Ayesha Siddiqui', role: 'freelancer', email: 'ayesha@design.io' },
+            targetUser: { name: 'Global Logistics Corp', role: 'client' },
+            clientClaim: "Work deliverable delayed by 2 days.",
+            freelancerClaim: "Client is refusing to release milestone payment after delivery. All Figma design files and interactive prototypes were submitted and approved via chat.",
+            reasonSelected: "Unreasonable payment release delay",
+            description: "Freelancer completed 18 screens and interactive flow. Client verified receipt but hasn't approved the escrow release.",
+            createdAt: new Date(Date.now() - 3600000 * 24).toISOString()
+          }
+        ];
+
+        for (const seed of seedDisputes) {
+          const docRef = await addDoc(collection(db, 'disputes'), seed);
+          disputesList.push({ id: docRef.id, ...seed });
+        }
+      }
+
+      setDisputes(disputesList);
     } catch (error) {
       console.error("Error fetching admin data:", error);
       toast.error('Failed to load telemetry data');
@@ -31,6 +75,51 @@ export default function AdminDashboard() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const handleResolveDispute = async (disputeId, resolutionType, dispute) => {
+    const toastId = toast.loading('Executing binding arbitration verdict...');
+    try {
+      let resolutionNote = '';
+      let status = '';
+
+      if (resolutionType === 'client') {
+        status = 'resolved_client';
+        resolutionNote = `Arbitrated in Client's Favor: 100% Escrow ($${dispute.disputedAmount}) refunded to Client.`;
+      } else if (resolutionType === 'freelancer') {
+        status = 'resolved_freelancer';
+        resolutionNote = `Arbitrated in Freelancer's Favor: 100% Escrow ($${dispute.disputedAmount}) released to Freelancer earnings.`;
+      } else {
+        status = 'resolved_split';
+        const half = (dispute.disputedAmount / 2).toFixed(2);
+        resolutionNote = `Arbitrated Partial 50/50 Split: $${half} refunded to Client, $${half} paid to Freelancer.`;
+      }
+
+      await updateDoc(doc(db, 'disputes', disputeId), {
+        status,
+        resolution: resolutionNote,
+        resolvedAt: new Date().toISOString()
+      });
+
+      // Send live notification to claimant if uid exists
+      if (dispute.filedBy?.uid) {
+        await addDoc(collection(db, 'notifications'), {
+          recipientId: dispute.filedBy.uid,
+          title: '⚖️ Arbitration Verdict Passed',
+          message: `Dispute for "${dispute.jobTitle}": ${resolutionNote}`,
+          type: 'deadline',
+          read: false,
+          time: 'Just now',
+          createdAt: new Date().toISOString()
+        });
+      }
+
+      setDisputes(prev => prev.map(d => d.id === disputeId ? { ...d, status, resolution: resolutionNote, resolvedAt: new Date().toISOString() } : d));
+      toast.success(resolutionNote, { id: toastId, duration: 4500 });
+    } catch (err) {
+      console.error('Error resolving dispute:', err);
+      toast.error('Failed to resolve dispute', { id: toastId });
+    }
+  };
 
   const handleDeleteUser = async (id) => {
     if(window.confirm("Are you sure you want to permanently delete this user account?")) {
@@ -163,6 +252,27 @@ export default function AdminDashboard() {
               {jobs.length}
             </span>
           </button>
+
+          <button 
+            onClick={() => setActiveTab('disputes')}
+            className={`w-full px-4 py-3 rounded-xl font-bold text-sm transition-all flex items-center justify-between ${
+              activeTab === 'disputes' 
+                ? 'bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-lg shadow-rose-600/30' 
+                : 'text-slate-400 hover:bg-slate-800/80 hover:text-white'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-base">⚖️</span>
+              Dispute Center
+            </div>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-black border ${
+              disputes.filter(d => d.status === 'pending_arbitration').length > 0
+                ? 'bg-rose-500/20 text-rose-300 border-rose-500/40 animate-pulse'
+                : 'bg-slate-800 text-slate-400 border-slate-700'
+            }`}>
+              {disputes.filter(d => d.status === 'pending_arbitration').length} Pending
+            </span>
+          </button>
         </nav>
 
         {/* Footer Logout */}
@@ -191,7 +301,7 @@ export default function AdminDashboard() {
             </span>
             <span className="text-slate-300 font-bold">/</span>
             <h1 className="text-lg font-black text-slate-900 capitalize">
-              {activeTab === 'overview' ? 'Real-Time System Overview' : activeTab === 'users' ? 'User Directory' : 'Contracts Directory'}
+              {activeTab === 'overview' ? 'Real-Time System Overview' : activeTab === 'users' ? 'User Directory' : activeTab === 'jobs' ? 'Contracts Directory' : 'Dispute & Arbitration Resolution Center'}
             </h1>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] font-extrabold text-emerald-700">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -452,6 +562,212 @@ export default function AdminDashboard() {
                 </table>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Tab 4: DISPUTE & ARBITRATION RESOLUTION CENTER */}
+        {activeTab === 'disputes' && (
+          <div className="flex-1 p-6 overflow-y-auto space-y-6">
+            {/* Header Control Box */}
+            <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-100 border border-rose-300 text-xs font-black text-rose-800 mb-1.5">
+                  <span>⚖️</span> ESCROW ARBITRATION BENCH
+                </div>
+                <h2 className="text-xl font-black text-slate-900 tracking-tight">Contract Disputes & Resolution Portal</h2>
+                <p className="text-xs text-slate-500">
+                  Review claims from Clients and Freelancers. Issue legally binding Escrow payout verdicts.
+                </p>
+              </div>
+
+              {/* Filter pills */}
+              <div className="flex items-center gap-2">
+                {[
+                  { id: 'all', label: `All Cases (${disputes.length})` },
+                  { id: 'pending', label: `Pending (${disputes.filter(d => d.status === 'pending_arbitration').length})` },
+                  { id: 'resolved', label: `Resolved (${disputes.filter(d => d.status !== 'pending_arbitration').length})` }
+                ].map(f => (
+                  <button
+                    key={f.id}
+                    onClick={() => setSelectedDisputeFilter(f.id)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                      selectedDisputeFilter === f.id
+                        ? 'bg-rose-600 text-white shadow-sm'
+                        : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Disputes List */}
+            {(() => {
+              const filteredDisputes = disputes.filter(d => {
+                if (selectedDisputeFilter === 'pending') return d.status === 'pending_arbitration';
+                if (selectedDisputeFilter === 'resolved') return d.status !== 'pending_arbitration';
+                return true;
+              });
+
+              if (filteredDisputes.length === 0) {
+                return (
+                  <div className="bg-white rounded-3xl p-12 border border-slate-200 text-center shadow-sm">
+                    <div className="w-14 h-14 mx-auto rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-3xl mb-3">
+                      ✓
+                    </div>
+                    <h3 className="font-bold text-slate-900 text-base">No disputes in this category</h3>
+                    <p className="text-slate-500 text-xs mt-1">Platform contracts are executing peacefully.</p>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="grid grid-cols-1 gap-6">
+                  {filteredDisputes.map(dispute => {
+                    const isPending = dispute.status === 'pending_arbitration';
+                    return (
+                      <div 
+                        key={dispute.id} 
+                        className={`bg-white rounded-3xl border transition-all shadow-sm overflow-hidden ${
+                          isPending ? 'border-rose-200 hover:border-rose-300' : 'border-slate-200 opacity-90'
+                        }`}
+                      >
+                        {/* Dispute Card Header */}
+                        <div className="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50/60">
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-xs font-mono font-black text-slate-400">
+                                CASE #{dispute.id.slice(0, 8)}
+                              </span>
+                              <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase ${
+                                isPending 
+                                  ? 'bg-rose-100 text-rose-700 border border-rose-200 animate-pulse' 
+                                  : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                              }`}>
+                                {isPending ? '⚠️ Action Required' : '✓ Verdict Rendered'}
+                              </span>
+                              <span className="text-xs text-slate-400">
+                                Logged {dispute.createdAt ? new Date(dispute.createdAt).toLocaleDateString() : 'Recently'}
+                              </span>
+                            </div>
+                            <h3 className="text-lg font-black text-slate-900">{dispute.jobTitle}</h3>
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            <div className="text-right">
+                              <span className="text-[10px] font-bold uppercase text-slate-400 block">Disputed Escrow</span>
+                              <span className="text-xl font-black text-emerald-600">${dispute.disputedAmount} USD</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Side-by-Side Claims Comparison Box (Directly addressing client says vs freelancer says) */}
+                        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* Client Box */}
+                          <div className="bg-blue-50/60 rounded-2xl p-4 border border-blue-100 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-blue-600"></span>
+                                Client Perspective: {dispute.filedBy?.role === 'client' ? dispute.filedBy.name : dispute.targetUser?.name}
+                              </span>
+                              <span className="text-[10px] font-black uppercase tracking-wider text-blue-600 bg-blue-100/60 px-2 py-0.5 rounded">
+                                {dispute.filedBy?.role === 'client' ? 'Claimant' : 'Respondent'}
+                              </span>
+                            </div>
+                            <div className="bg-white p-3 rounded-xl border border-blue-100 text-xs text-slate-700 leading-relaxed">
+                              <strong>Client says:</strong> "{dispute.clientClaim || "Freelancer didn't complete the work to specification."}"
+                            </div>
+                          </div>
+
+                          {/* Freelancer Box */}
+                          <div className="bg-violet-50/60 rounded-2xl p-4 border border-violet-100 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-bold text-violet-900 flex items-center gap-1.5">
+                                <span className="w-2 h-2 rounded-full bg-violet-600"></span>
+                                Freelancer Perspective: {dispute.filedBy?.role === 'freelancer' ? dispute.filedBy.name : dispute.targetUser?.name}
+                              </span>
+                              <span className="text-[10px] font-black uppercase tracking-wider text-violet-600 bg-violet-100/60 px-2 py-0.5 rounded">
+                                {dispute.filedBy?.role === 'freelancer' ? 'Claimant' : 'Respondent'}
+                              </span>
+                            </div>
+                            <div className="bg-white p-3 rounded-xl border border-violet-100 text-xs text-slate-700 leading-relaxed">
+                              <strong>Freelancer says:</strong> "{dispute.freelancerClaim || "Client changed requirements outside initial scope."}"
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Statement of Cause / Audit Notes */}
+                        {dispute.description && (
+                          <div className="px-6 pb-4">
+                            <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 text-xs text-slate-600">
+                              <span className="font-bold text-slate-800 uppercase text-[10px] tracking-wider block mb-1">
+                                Case Audit Summary:
+                              </span>
+                              {dispute.description}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Verdict / Resolution Section */}
+                        {!isPending ? (
+                          <div className="px-6 py-4 bg-emerald-50/80 border-t border-emerald-100 flex items-center justify-between flex-wrap gap-2">
+                            <div className="flex items-center gap-2 text-xs font-bold text-emerald-900">
+                              <span className="text-base">⚖️</span>
+                              <span><strong>Official Arbitration Verdict:</strong> {dispute.resolution}</span>
+                            </div>
+                            <span className="text-[11px] text-emerald-700 font-semibold">
+                              Executed {dispute.resolvedAt ? new Date(dispute.resolvedAt).toLocaleDateString() : ''}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="p-5 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div className="text-white">
+                              <p className="text-xs font-black uppercase tracking-wider text-rose-300">
+                                Impartial Superadmin Arbitrator Action
+                              </p>
+                              <p className="text-xs text-slate-300">
+                                Select one of 3 binding resolutions to finalize escrow distribution:
+                              </p>
+                            </div>
+
+                            {/* 3 Admin Decisions */}
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {/* Resolve in Client's Favor */}
+                              <button
+                                onClick={() => handleResolveDispute(dispute.id, 'client', dispute)}
+                                className="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs rounded-xl shadow-md hover:scale-105 transition-all"
+                                title="100% Escrow refunded to Client"
+                              >
+                                🔵 Resolve in Client's Favor
+                              </button>
+
+                              {/* Resolve in Freelancer's Favor */}
+                              <button
+                                onClick={() => handleResolveDispute(dispute.id, 'freelancer', dispute)}
+                                className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl shadow-md hover:scale-105 transition-all"
+                                title="100% Escrow released to Freelancer"
+                              >
+                                🟢 Resolve in Freelancer's Favor
+                              </button>
+
+                              {/* Partial 50/50 Refund */}
+                              <button
+                                onClick={() => handleResolveDispute(dispute.id, 'split', dispute)}
+                                className="px-3.5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl shadow-md hover:scale-105 transition-all"
+                                title="Split escrow 50/50 between both parties"
+                              >
+                                🟡 Partial Refund (50/50)
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
         )}
 

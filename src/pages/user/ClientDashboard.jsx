@@ -8,6 +8,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { getAIMatchedFreelancers } from '../../services/aiService';
 import RealTimeChatModal from '../../components/RealTimeChatModal';
 import NotificationBell from '../../components/NotificationBell';
+import DisputeModal from '../../components/DisputeModal';
 
 export default function ClientDashboard() {
   const { currentUser, userData, logout } = useAuth();
@@ -22,6 +23,7 @@ export default function ClientDashboard() {
   const [allFreelancers, setAllFreelancers] = useState([]);
   const [aiMatchingJob, setAiMatchingJob] = useState(null); // When client clicks "🤖 AI Match Talent"
   const [chatTarget, setChatTarget] = useState(null); // { targetUser, jobContext }
+  const [disputeTarget, setDisputeTarget] = useState(null); // { contractId, jobTitle, freelancerId, freelancerName, amount, defaultType }
   const [activeTab, setActiveTab] = useState('jobs'); // 'jobs' | 'proposals'
   const [loading, setLoading] = useState(false);
 
@@ -491,9 +493,26 @@ export default function ClientDashboard() {
                             </button>
 
                             {app.status === 'hired' ? (
-                              <span className="px-3 py-1.5 rounded-xl text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
-                                ✓ Hired & Escrow Funded
-                              </span>
+                              <div className="flex items-center gap-2">
+                                <span className="px-3 py-1.5 rounded-xl text-xs font-black bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
+                                  ✓ Hired & Escrow Funded
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => setDisputeTarget({
+                                    contractId: app.id,
+                                    jobTitle: app.jobTitle || 'Active Milestone Contract',
+                                    freelancerId: app.freelancerId,
+                                    freelancerName: app.freelancerName,
+                                    amount: app.bidAmount,
+                                    defaultType: 'dispute'
+                                  })}
+                                  className="px-3 py-1.5 rounded-xl text-xs font-extrabold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors flex items-center gap-1"
+                                  title="Dispute this milestone if work is incomplete or substandard"
+                                >
+                                  <span>⚖️</span> Dispute Escrow
+                                </button>
+                              </div>
                             ) : (
                               <button
                                 onClick={() => handleHireTalent(app.id, app.bidAmount, app.freelancerName || 'Freelancer', app.freelancerId, app.jobTitle)}
@@ -663,6 +682,16 @@ export default function ClientDashboard() {
           onClose={() => setChatTarget(null)}
           targetUser={chatTarget.targetUser}
           jobContext={chatTarget.jobContext}
+        />
+      )}
+
+      {/* Trust & Safety / Dispute Modal */}
+      {disputeTarget && (
+        <DisputeModal
+          isOpen={Boolean(disputeTarget)}
+          onClose={() => setDisputeTarget(null)}
+          defaultType={disputeTarget.defaultType || 'dispute'}
+          contextData={disputeTarget}
         />
       )}
 

@@ -13,6 +13,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
+import DisputeModal from './DisputeModal';
 
 export default function RealTimeChatModal({ isOpen, onClose, targetUser, jobContext }) {
   const { currentUser, userData } = useAuth();
@@ -20,6 +21,7 @@ export default function RealTimeChatModal({ isOpen, onClose, targetUser, jobCont
   const [inputText, setInputText] = useState('');
   const [attachment, setAttachment] = useState(null);
   const [activeConversationId, setActiveConversationId] = useState(null);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const messagesEndRef = useRef(null);
 
   const getConversationId = (uid1, uid2) => {
@@ -173,12 +175,22 @@ export default function RealTimeChatModal({ isOpen, onClose, targetUser, jobCont
               </div>
             </div>
 
-            <button
-              onClick={onClose}
-              className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-white/10 transition-colors"
-            >
-              ✕
-            </button>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setIsReportModalOpen(true)}
+                className="px-2.5 py-1.5 rounded-xl text-rose-300 hover:text-rose-100 hover:bg-rose-500/20 text-xs font-bold transition-colors flex items-center gap-1 border border-rose-400/20"
+                title="Report this conversation for violation or abuse"
+              >
+                <span>🚩</span> Report
+              </button>
+              <button
+                onClick={onClose}
+                className="text-slate-400 hover:text-white p-2 rounded-xl hover:bg-white/10 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
           </div>
 
           {/* Messages Stream Container */}
@@ -302,6 +314,23 @@ export default function RealTimeChatModal({ isOpen, onClose, targetUser, jobCont
           </form>
         </motion.div>
       </div>
+
+      {/* Report Chat / Violation Dispute Modal */}
+      {isReportModalOpen && (
+        <DisputeModal
+          isOpen={isReportModalOpen}
+          onClose={() => setIsReportModalOpen(false)}
+          defaultType="message"
+          contextData={{
+            jobTitle: jobContext || 'Direct Messaging Chat Violation',
+            clientId: userData?.role === 'client' ? currentUser?.uid : targetUser?.id || targetUser?.uid,
+            clientName: userData?.role === 'client' ? (userData?.displayName || 'Client') : (targetUser?.name || 'Client'),
+            freelancerId: userData?.role === 'freelancer' ? currentUser?.uid : targetUser?.id || targetUser?.uid,
+            freelancerName: userData?.role === 'freelancer' ? (userData?.displayName || 'Freelancer') : (targetUser?.name || 'Freelancer'),
+            amount: 0
+          }}
+        />
+      )}
     </AnimatePresence>
   );
 }
