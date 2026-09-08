@@ -17,6 +17,7 @@ export default function FreelancerDashboard() {
   const [applyingTo, setApplyingTo] = useState(null);
   const [coverLetter, setCoverLetter] = useState('');
   const [bidAmount, setBidAmount] = useState('');
+  const [deliveryDays, setDeliveryDays] = useState('5');
   const [aiGenerating, setAiGenerating] = useState(false);
   const [appliedJobsCount, setAppliedJobsCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
@@ -75,6 +76,7 @@ export default function FreelancerDashboard() {
         freelancerEmail: currentUser.email || '',
         coverLetter,
         bidAmount: Number(bidAmount),
+        deliveryDays: Number(deliveryDays) || 5,
         status: 'pending',
         createdAt: new Date().toISOString()
       };
@@ -85,6 +87,7 @@ export default function FreelancerDashboard() {
       setApplyingTo(null);
       setCoverLetter('');
       setBidAmount('');
+      setDeliveryDays('5');
     } catch (err) {
       console.error("Error applying to job:", err);
       toast.error('Failed to submit proposal.', { id: toastId });
@@ -95,13 +98,16 @@ export default function FreelancerDashboard() {
     setAiGenerating(true);
     const toastId = toast.loading('🤖 AI is analyzing contract & drafting tailored proposal...');
     setTimeout(() => {
-      const { coverLetter: aiNote, suggestedBid } = generateAIProposal({
+      const { coverLetter: aiNote, suggestedBid, suggestedDays } = generateAIProposal({
         job,
         freelancer: userData || { displayName: currentUser?.displayName }
       });
       setCoverLetter(aiNote);
       if (!bidAmount) {
         setBidAmount(suggestedBid);
+      }
+      if (suggestedDays) {
+        setDeliveryDays(String(suggestedDays));
       }
       setAiGenerating(false);
       toast.success('✨ AI Proposal drafted with optimal keywords & structure!', { id: toastId });
@@ -340,6 +346,11 @@ export default function FreelancerDashboard() {
                       <div className="text-right">
                         <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Your Bid</p>
                         <p className="text-2xl font-black text-emerald-600">${app.bidAmount} <span className="text-xs font-semibold text-slate-500">USD</span></p>
+                        {app.deliveryDays && (
+                          <p className="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md inline-block mt-0.5 border border-indigo-100">
+                            ⏱️ {app.deliveryDays} Days Delivery
+                          </p>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -491,15 +502,33 @@ export default function FreelancerDashboard() {
                           </button>
                         </div>
 
-                        <div>
-                          <label className="block text-xs font-bold text-slate-700 mb-1">Your Bid Amount (USD)</label>
-                          <input 
-                            type="number" 
-                            value={bidAmount}
-                            onChange={(e) => setBidAmount(e.target.value)}
-                            placeholder={`Job Budget: $${job.budget}`}
-                            className="w-full border border-slate-200 bg-white rounded-xl py-2 px-3 text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                          />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">Your Bid Amount (USD)</label>
+                            <input 
+                              type="number" 
+                              value={bidAmount}
+                              onChange={(e) => setBidAmount(e.target.value)}
+                              placeholder={`Job Budget: $${job.budget}`}
+                              className="w-full border border-slate-200 bg-white rounded-xl py-2 px-3 text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-bold text-slate-700 mb-1">Estimated Delivery (Days)</label>
+                            <div className="relative">
+                              <input 
+                                type="number" 
+                                min="1"
+                                max="90"
+                                value={deliveryDays}
+                                onChange={(e) => setDeliveryDays(e.target.value)}
+                                placeholder="e.g. 5"
+                                className="w-full border border-slate-200 bg-white rounded-xl py-2 pl-3 pr-12 text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                              />
+                              <span className="absolute right-3 top-2 text-xs font-bold text-slate-400 pointer-events-none">Days</span>
+                            </div>
+                          </div>
                         </div>
 
                         <div>

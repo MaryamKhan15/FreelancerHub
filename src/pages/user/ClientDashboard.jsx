@@ -426,6 +426,11 @@ export default function ClientDashboard() {
                           <div className="text-right">
                             <span className="text-xs text-slate-400 font-semibold block">Proposed Bid</span>
                             <span className="text-lg font-black text-emerald-600">${app.bidAmount} USD</span>
+                            {app.deliveryDays && (
+                              <span className="block text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100 mt-1">
+                                ⏱️ {app.deliveryDays} Days Delivery
+                              </span>
+                            )}
                           </div>
                         </div>
 

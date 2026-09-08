@@ -117,9 +117,11 @@ Let's connect and discuss the next steps!`;
   const templates = [t1, t2, t3];
   const selectedIndex = (jobTitle.length) % templates.length;
   const recommendedBid = job?.budget ? Math.round(Number(job.budget) * 0.95) : 350;
+  const suggestedDays = Number(job?.budget) > 1000 ? 10 : Number(job?.budget) > 500 ? 7 : 3;
 
   return {
     coverLetter: templates[selectedIndex],
-    suggestedBid: recommendedBid
+    suggestedBid: recommendedBid,
+    suggestedDays
   };
 }
