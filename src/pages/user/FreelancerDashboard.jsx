@@ -7,9 +7,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { generateAIProposal } from '../../services/aiService';
 import RealTimeChatModal from '../../components/RealTimeChatModal';
+import UpgradeProModal from '../../components/UpgradeProModal';
 
 export default function FreelancerDashboard() {
-  const { currentUser, userData, logout } = useAuth();
+  const { currentUser, userData, logout, reloadUserData } = useAuth();
   const navigate = useNavigate();
   const [availableJobs, setAvailableJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,6 +24,7 @@ export default function FreelancerDashboard() {
   const [myApplications, setMyApplications] = useState([]);
   const [chatTarget, setChatTarget] = useState(null); // { targetUser, jobContext }
   const [activeTab, setActiveTab] = useState('browse'); // 'browse' | 'proposals'
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchJobs = async () => {
@@ -126,8 +128,13 @@ export default function FreelancerDashboard() {
               <span className="w-2 h-2 rounded-full bg-violet-600 animate-pulse"></span>
               USER DASHBOARD (FREELANCER)
             </div>
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2">
               User Dashboard &bull; <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-indigo-600">{userData?.displayName || 'Freelancer'}</span>
+              {userData?.isPro && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 shadow-sm" title="FreelanceHub Golden PRO Verified Member">
+                  👑 PRO
+                </span>
+              )}
             </h1>
             <p className="text-sm text-slate-500 mt-1">Discover new client contracts, submit proposals, and track milestone earnings.</p>
           </div>
@@ -192,25 +199,53 @@ export default function FreelancerDashboard() {
         </div>
 
         {/* Pro Membership Monetization Banner */}
-        <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-5 sm:p-6 text-white flex flex-col sm:flex-row items-center justify-between gap-5 border border-indigo-500/30 shadow-xl">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 to-amber-600 flex items-center justify-center text-slate-950 font-black text-2xl shadow-lg shrink-0">
-              👑
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h4 className="font-extrabold text-base text-white">Upgrade to FreelanceHub PRO</h4>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-400/20 text-amber-300 border border-amber-400/30">
-                  $9.99 / MO
-                </span>
+        {userData?.isPro ? (
+          <div className="bg-gradient-to-r from-amber-500 via-amber-600 to-yellow-600 rounded-3xl p-5 sm:p-6 text-slate-950 flex flex-col sm:flex-row items-center justify-between gap-5 border border-amber-300 shadow-xl">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-slate-950 text-amber-400 flex items-center justify-center font-black text-2xl shadow-lg shrink-0">
+                👑
               </div>
-              <p className="text-xs text-slate-300 mt-1">Get Golden Pro Verified badge, top 10% search placement, and zero withdrawal fees.</p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="font-black text-base text-slate-950">FreelanceHub PRO Member</h4>
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-slate-950 text-amber-300">
+                    Active VIP
+                  </span>
+                </div>
+                <p className="text-xs text-slate-900 font-medium mt-1">
+                  Your profile has Top 10% algorithmic priority, 0% platform withdrawal fees, and Golden Verified status.
+                </p>
+              </div>
+            </div>
+            <div className="shrink-0 px-4 py-2 bg-slate-950 text-amber-400 font-black text-xs rounded-xl shadow-md">
+              ✓ 10% Search Boost Active
             </div>
           </div>
-          <Link to="/pricing" className="shrink-0 px-5 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-xs rounded-xl shadow-lg hover:scale-105 transition-all">
-            View PRO Perks &rarr;
-          </Link>
-        </div>
+        ) : (
+          <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-5 sm:p-6 text-white flex flex-col sm:flex-row items-center justify-between gap-5 border border-indigo-500/30 shadow-xl">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-400 to-amber-600 flex items-center justify-center text-slate-950 font-black text-2xl shadow-lg shrink-0">
+                👑
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="font-extrabold text-base text-white">Upgrade to FreelanceHub PRO</h4>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-400/20 text-amber-300 border border-amber-400/30">
+                    $9.99 / MO
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300 mt-1">Get Golden Pro Verified badge, top 10% search placement, and zero withdrawal fees.</p>
+              </div>
+            </div>
+            <button 
+              type="button"
+              onClick={() => setIsUpgradeModalOpen(true)}
+              className="shrink-0 px-5 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-black text-xs rounded-xl shadow-lg hover:scale-105 transition-all cursor-pointer"
+            >
+              Upgrade to PRO Now &rarr;
+            </button>
+          </div>
+        )}
 
         {/* Tab Navigation */}
         <div className="flex items-center gap-3 border-b border-slate-200 pb-3">
@@ -535,6 +570,15 @@ export default function FreelancerDashboard() {
           jobContext={chatTarget.jobContext}
         />
       )}
+
+      {/* Instant Pro Upgrade Modal */}
+      <UpgradeProModal
+        isOpen={isUpgradeModalOpen}
+        onClose={() => setIsUpgradeModalOpen(false)}
+        onSuccess={() => {
+          reloadUserData();
+        }}
+      />
 
     </div>
   );

@@ -224,11 +224,16 @@ export default function FreelancerListings() {
                       </div>
 
                       <div className="flex-grow min-w-0">
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 flex-wrap">
                           <h2 className="text-lg font-bold text-slate-900 truncate group-hover:text-indigo-600 transition-colors">
                             {freelancer.displayName || 'Pro Freelancer'}
                           </h2>
                           <span className="text-indigo-600 text-sm shrink-0" title="Identity Verified by FreelanceHub">✓</span>
+                          {freelancer.isPro && (
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 shadow-xs shrink-0 flex items-center gap-1">
+                              <span>👑</span> PRO
+                            </span>
+                          )}
                         </div>
                         
                         <p className="text-xs font-semibold text-indigo-600 mt-0.5 truncate">

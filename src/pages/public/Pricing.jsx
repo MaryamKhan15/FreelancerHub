@@ -1,7 +1,13 @@
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useAuth } from '../../context/AuthContext';
+import UpgradeProModal from '../../components/UpgradeProModal';
 
 export default function Pricing() {
+  const { currentUser, userData, reloadUserData } = useAuth();
+  const navigate = useNavigate();
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   return (
     <div className="bg-slate-50 min-h-screen pb-24 font-sans bg-grid-pattern">
       
@@ -120,12 +126,25 @@ export default function Pricing() {
               </ul>
             </div>
 
-            <Link
-              to="/register"
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white text-center font-extrabold text-sm shadow-lg shadow-indigo-500/30 transition-all hover:scale-[1.02]"
-            >
-              Upgrade to Pro &rarr;
-            </Link>
+            {userData?.isPro ? (
+              <div className="w-full py-3 rounded-xl bg-amber-400/20 border border-amber-400/40 text-amber-300 text-center font-black text-sm flex items-center justify-center gap-2">
+                <span>👑 PRO Plan Active</span>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  if (!currentUser) {
+                    navigate('/login');
+                  } else {
+                    setIsUpgradeModalOpen(true);
+                  }
+                }}
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white text-center font-extrabold text-sm shadow-lg shadow-indigo-500/30 transition-all hover:scale-[1.02] cursor-pointer"
+              >
+                Upgrade to Pro &rarr;
+              </button>
+            )}
           </div>
 
           {/* Tier 3: Client Featured / Enterprise */}
@@ -164,12 +183,21 @@ export default function Pricing() {
               </ul>
             </div>
 
-            <Link
-              to="/register"
-              className="w-full py-3 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-center font-bold text-sm transition-all border border-indigo-200"
+            <button
+              type="button"
+              onClick={() => {
+                if (!currentUser) {
+                  navigate('/login');
+                } else if (userData?.role === 'client') {
+                  navigate('/dashboard');
+                } else {
+                  navigate('/dashboard');
+                }
+              }}
+              className="w-full py-3 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-center font-bold text-sm transition-all border border-indigo-200 cursor-pointer"
             >
-              Post Featured Contract
-            </Link>
+              Post Featured Contract &rarr;
+            </button>
           </div>
 
         </div>
@@ -209,6 +237,15 @@ export default function Pricing() {
         </div>
 
       </div>
+
+      {/* Instant Pro Upgrade Modal */}
+      <UpgradeProModal
+        isOpen={isUpgradeModalOpen}
+        onClose={() => setIsUpgradeModalOpen(false)}
+        onSuccess={() => {
+          reloadUserData();
+        }}
+      />
 
     </div>
   );

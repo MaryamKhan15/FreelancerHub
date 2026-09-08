@@ -39,7 +39,20 @@ export function AuthProvider({ children }) {
     return unsubscribe;
   }, []);
 
-  const value = { currentUser, userData, loading, logout };
+  const reloadUserData = async () => {
+    if (!auth.currentUser) return;
+    try {
+      const docRef = doc(db, 'users', auth.currentUser.uid);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        setUserData(docSnap.data());
+      }
+    } catch (error) {
+      console.error("Error refreshing user data:", error);
+    }
+  };
+
+  const value = { currentUser, userData, loading, logout, reloadUserData };
 
   return (
     <AuthContext.Provider value={value}>
