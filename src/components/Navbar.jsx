@@ -82,8 +82,9 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="flex md:hidden items-center">
+          {/* Mobile Menu Button & Notification Bell */}
+          <div className="flex md:hidden items-center gap-2">
+            {currentUser && <NotificationBell />}
             <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="text-slate-600 hover:text-slate-900 focus:outline-none p-2"
