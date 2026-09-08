@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { getAIMatchedFreelancers } from '../../services/aiService';
 import RealTimeChatModal from '../../components/RealTimeChatModal';
+import NotificationBell from '../../components/NotificationBell';
 
 export default function ClientDashboard() {
   const { currentUser, userData, logout } = useAuth();
@@ -87,13 +88,31 @@ export default function ClientDashboard() {
     setLoading(false);
   };
 
-  const handleHireTalent = async (appId, bidAmount, freelancerName) => {
+  const handleHireTalent = async (appId, bidAmount, freelancerName, freelancerId, jobTitle) => {
     const toastId = toast.loading(`Depositing $${bidAmount} to Escrow & Hiring...`);
     try {
       await updateDoc(doc(db, 'applications', appId), {
         status: 'hired',
         hiredAt: new Date().toISOString()
       });
+
+      // Send live notification to freelancer
+      if (freelancerId) {
+        try {
+          await addDoc(collection(db, 'notifications'), {
+            recipientId: freelancerId,
+            title: '🎉 Proposal Accepted & Hired!',
+            message: `${userData?.displayName || 'Client'} accepted your proposal for "${jobTitle || 'Contract'}"! $${bidAmount || '0'} has been funded in Escrow.`,
+            type: 'hire',
+            read: false,
+            time: 'Just now',
+            createdAt: new Date().toISOString()
+          });
+        } catch (notifErr) {
+          console.error("Error creating notification for freelancer:", notifErr);
+        }
+      }
+
       setApplications(applications.map(a => a.id === appId ? { ...a, status: 'hired' } : a));
       toast.success(`Hired ${freelancerName}! $${bidAmount} funded in Escrow.`, { id: toastId });
     } catch (err) {
@@ -123,6 +142,7 @@ export default function ClientDashboard() {
           </div>
 
           <div className="flex items-center gap-3 flex-wrap">
+            <NotificationBell />
             <Link 
               to="/" 
               className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm transition-colors"
@@ -476,7 +496,7 @@ export default function ClientDashboard() {
                               </span>
                             ) : (
                               <button
-                                onClick={() => handleHireTalent(app.id, app.bidAmount, app.freelancerName || 'Freelancer')}
+                                onClick={() => handleHireTalent(app.id, app.bidAmount, app.freelancerName || 'Freelancer', app.freelancerId, app.jobTitle)}
                                 className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold text-xs rounded-xl shadow-md hover:shadow-emerald-200 hover:scale-105 transition-all"
                               >
                                 Hire & Fund Escrow (${app.bidAmount}) &rarr;

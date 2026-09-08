@@ -8,6 +8,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { generateAIProposal } from '../../services/aiService';
 import RealTimeChatModal from '../../components/RealTimeChatModal';
 import UpgradeProModal from '../../components/UpgradeProModal';
+import NotificationBell from '../../components/NotificationBell';
 
 export default function FreelancerDashboard() {
   const { currentUser, userData, logout, reloadUserData } = useAuth();
@@ -81,6 +82,24 @@ export default function FreelancerDashboard() {
         createdAt: new Date().toISOString()
       };
       const docRef = await addDoc(collection(db, 'applications'), newApp);
+
+      // Create live notification for the client
+      if (job.clientId) {
+        try {
+          await addDoc(collection(db, 'notifications'), {
+            recipientId: job.clientId,
+            title: 'New Proposal Received',
+            message: `${userData?.displayName || 'Freelancer'} submitted a proposal ($${bidAmount || job.budget}, ${deliveryDays || 5} days) for "${job.title}".`,
+            type: 'proposal',
+            read: false,
+            time: 'Just now',
+            createdAt: new Date().toISOString()
+          });
+        } catch (notifErr) {
+          console.error("Error creating notification for client:", notifErr);
+        }
+      }
+
       toast.success('Proposal submitted successfully! Client notified.', { id: toastId });
       setMyApplications(prev => [{ id: docRef.id, ...newApp }, ...prev]);
       setAppliedJobsCount(prev => prev + 1);
@@ -146,6 +165,7 @@ export default function FreelancerDashboard() {
           </div>
 
           <div className="flex items-center gap-3 flex-wrap">
+            <NotificationBell />
             <Link 
               to="/" 
               className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-white hover:bg-slate-100 px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm transition-colors"

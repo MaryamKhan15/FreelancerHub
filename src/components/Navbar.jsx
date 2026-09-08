@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
+import NotificationBell from './NotificationBell';
 
 export default function Navbar() {
   const { currentUser, userData, logout } = useAuth();
@@ -57,6 +58,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-4">
             {currentUser ? (
               <div className="flex items-center gap-3">
+                <NotificationBell />
                 <Link to="/dashboard" className="text-slate-700 font-bold hover:text-indigo-600 flex items-center gap-2.5 transition-colors">
                   <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white flex items-center justify-center font-black text-xs shadow-sm">
                     {userData?.displayName ? userData.displayName.charAt(0).toUpperCase() : 'U'}
